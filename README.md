@@ -1,4 +1,22 @@
 # prototxt parser
+``` 
+layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  label: "测试"
+  input_param {
+    shape {
+      dim: 1.03
+      dim: -5.3
+      dim: 224
+      dim: 224}
+  }
+}
+#name: "ZF"
+
+```
+
 ```C++
     FILE* fp = fopen(path, "rb");
    
