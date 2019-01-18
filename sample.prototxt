@@ -1,0 +1,99 @@
+layer {
+  name: "dat得到的 dd得到的a"
+  type: "Input"
+  top: "data"
+  input_param {
+    shape {
+      dim: 1
+      dim: 3
+      dim: 224
+      dim: 224
+    }
+  }
+}
+#name: "ZF"
+#input: "data"
+#input: "im_info"
+#input_shape {
+#  dim: 1
+#  dim: 3
+#  dim: 224
+#  dim: 224
+#}
+#input_shape {
+#  dim: 1
+#  dim: 3
+#}
+layer {
+  name: "layerddd ddddd锁定的1-conv-v2"
+  type: "Convolution"
+  bottom: "data"
+  top: "layer1-conv"
+  convolution_param {
+    num_output: 32
+    pad: 2
+    kernel_size: 5
+    stride: 2
+  }
+}
+layer {
+  name: "layer1-act"
+  type: "ReLU"
+  bottom: "layer1-conv"
+  top: "layer1-conv"
+}
+layer {
+  name: "layer3-conv-v2_btd1"
+  type: "Convolution"
+  bottom: "layer1-conv"
+  top: "layer3-conv-v2_btd1"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  convolution_param {
+    num_output: 10
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    kernel_h: 1
+    kernel_w: 1
+  }
+}
+layer {
+  name: "layer3-conv-v2_btd2"
+  type: "Convolution"
+  bottom: "layer3-conv-v2_btd1"
+  top: "layer3-conv-v2_btd2"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  convolution_param {
+    num_output: 10
+    group: 5
+    weight_filler {
+      type: "msra"
+    }
+    bias_filler {
+      type: "constant"
+    }
+    pad_h: 1
+    pad_w: 1
+    kernel_h: 3
+    kernel_w: 3
+    stride_h: 1
+    stride_w: 1
+  }
+}
