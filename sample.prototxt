@@ -74,7 +74,7 @@ layer {
   top: "layer3-conv-v2_btd2"
   param {
     lr_mult: 1.0
-    decay_mult: 1.0
+    decay_mult: 1.033
   }
   param {
     lr_mult: 2.0
@@ -85,6 +85,7 @@ layer {
     group: 5
     weight_filler {
       type: "msra"
+      label: MAX
     }
     bias_filler {
       type: "constant"
@@ -94,6 +95,5 @@ layer {
     kernel_h: 3
     kernel_w: 3
     stride_h: 1
-    stride_w: 1
-  }
+    stride_w: 1}
 }

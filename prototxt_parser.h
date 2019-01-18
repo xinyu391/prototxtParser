@@ -3,6 +3,73 @@
 #include <vector>
 #include <string>
 
+
+ enum Token {
+    UNKNOWN,
+    WORD, //ABC
+    INTEGER, // 33.333
+    FLOAT,
+    STRING, // "xxx"
+    COLON, //:
+    COMMENT, //#
+    OBJECT,
+    BRACE_START, // {
+    BRACE_END, //}
+    EOF_,
+} ;
+
+class Value{
+public:
+    Value(){};
+    Value(const std::string k, const std::string val, const Token typ):key(k),txtVal(val),type(typ){
+        if(typ==INTEGER){
+            intVal = atoi(val.c_str());
+        }else if(typ==FLOAT){
+            fltVal  = atof(val.c_str());
+        }
+    };
+    Value(const std::string k, const std::vector<Value>&val, const Token typ):key(k),type(typ){
+        objVal.assign(val.begin(),val.end());
+    };
+    Value(const Value&v){
+        key=v.key;
+        txtVal = v.txtVal;
+        objVal.assign(v.objVal.begin(),v.objVal.end());
+        type = v.type;
+        intVal = v.intVal;
+        fltVal = v.fltVal;
+
+    }
+    std::string String(){
+        if(type!=OBJECT){
+            if(type==INTEGER){
+                char buf [64];
+                sprintf(buf,"%s:%d",key.c_str(),intVal);
+                return  std::string(buf);
+            }
+            if(type==FLOAT){
+               char buf [64];
+                sprintf(buf,"%s:%f",key.c_str(),fltVal);
+                return  std::string(buf);
+            }
+            return key+":"+txtVal;
+        }
+        std::string txt = key+"{\n";
+        for(Value& v: objVal){
+            txt+= v.String()+"\n";
+        }
+        txt+="}";
+
+        return txt;
+    }
+public:
+    std::string key;
+    std::string txtVal;
+    int intVal;
+    double fltVal;
+    std::vector<Value> objVal;
+    Token type;
+};
 inline int isSplitChar(char ch) {
     switch (ch) {
     case ':':
@@ -31,20 +98,42 @@ inline int nextChar(FILE* fp) {
     return ch;
 }
 
+inline int isInteger(const char* str, int size){
+    if(size<1){
+        return 0;
+    }
 
- enum Token {
-    UNKNOWN,
-    WORD, //ABC
-    NUMBER, // 33.333
-    STRING, // "xxx"
-    COLON, //:
-    COMMENT, //#
-    OBJECT,
-    BRACE_START, // {
-    BRACE_END, //}
-    EOF_,
-} ;
-
+    int i = 0;
+    if(str[0]=='-'||str[0]=='+'){
+        i =1;
+    }
+    for(;i<size;i++){
+        if(str[i]<'0'||str[i]>'9'){
+            return 0;
+        }
+    }
+    return 1;
+}
+inline int isFloat(const char* str, int size){
+      if(size<1){
+        return 0;
+    }
+    int i = 0;
+    if(str[0]=='-'||str[0]=='+'){
+        i =1;
+    }
+    int dot = 0;
+    for(;i<size;i++){
+        if(str[i]<'0'||str[i]>'9'){
+            if(!dot&&str[i]=='.'){
+                dot =1;
+            }else{
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
 
 static Token readToken(FILE* fp, char* buf) {
     int ch = nextChar(fp);
@@ -91,12 +180,24 @@ static Token readToken(FILE* fp, char* buf) {
             ch = fgetc(fp);
             if (isWhiteChar(ch)) {
                 buf[bi] = 0;
+                if(isInteger(buf,bi)){
+                    return INTEGER;
+                }
+                if(isFloat(buf,bi)){
+                    return FLOAT;
+                }    
                 return WORD;
             }
             if (isSplitChar(ch)) {
                 // 回退一个字符
                 fseek(fp, -1, SEEK_CUR);
                 buf[bi] = 0;
+                if(isInteger(buf,bi)){
+                    return INTEGER;
+                }
+                if(isFloat(buf,bi)){
+                    return FLOAT;
+                }                
                 return WORD;
             }
             buf[bi++] = ch;
@@ -105,37 +206,6 @@ static Token readToken(FILE* fp, char* buf) {
     return UNKNOWN;
 }
 
-class Value{
-public:
-    Value(){};
-    Value(const std::string k, const std::string val, const Token typ):key(k),txtVal(val),type(typ){};
-    Value(const std::string k, const std::vector<Value>&val, const Token typ):key(k),type(typ){
-        objVal.assign(val.begin(),val.end());
-    };
-    Value(const Value&v){
-        key=v.key;
-        txtVal = v.txtVal;
-        objVal.assign(v.objVal.begin(),v.objVal.end());
-        type = v.type;
-    }
-    std::string String(){
-        if(type!=OBJECT){
-            return key+":"+txtVal;
-        }
-        std::string txt = key+"{\n";
-        for(Value& v: objVal){
-            txt+= v.String()+"\n";
-        }
-        txt+="}";
-
-        return txt;
-    }
-public:
-    std::string key;
-    std::string txtVal;
-    std::vector<Value> objVal;
-    Token type;
-};
 
 static void parse(FILE* fp, std::vector<Value>& list) {
     while (1) {
@@ -160,7 +230,7 @@ static void parse(FILE* fp, std::vector<Value>& list) {
                 Value v(key, objVal,OBJECT);
                 list.push_back(v);
             } else {
-                list.push_back(Value(key, buf,STRING));
+                list.push_back(Value(key, buf,token));
             }
         } else if (token == BRACE_START) {
             //readObj
