@@ -52,7 +52,10 @@ public:
                 sprintf(buf,"%s:%f",key.c_str(),fltVal);
                 return  std::string(buf);
             }
-            return key+":"+txtVal;
+             if(type==WORD){
+                   return key+":"+txtVal;
+             }
+            return key+":\""+txtVal+"\"";
         }
         std::string txt = key+"{\n";
         for(Value& v: objVal){
@@ -216,7 +219,7 @@ static void parse(FILE* fp, std::vector<Value>& list) {
         } else if (token == BRACE_END) {
             return;
         } else if (token == COMMENT) {
-            list.push_back(Value("", buf,COMMENT));
+            list.push_back(Value("COMMENT", buf,COMMENT));
             continue;
         }
         std::string key = buf;
