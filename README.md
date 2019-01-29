@@ -21,9 +21,12 @@ layer {
 ```
 
 ```C++
-    FILE* fp = fopen(path, "rb");
+    FILE* fp = fopen(path, "rb");   
    
-    Value val=  prototxtParse(fp);
-    printf("size %d\n",val.objVal.size());
-    printf("%s\n",val.String().c_str());
+    pj_parser::Object obj = pj_parser::prototxtParse(fp);
+    printf("%s\n",obj.String().c_str());
+    for(pj_parser::Item& item :obj.list){
+      //
+    }
+    obj.release();
 ```
