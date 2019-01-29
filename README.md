@@ -1,4 +1,7 @@
-# prototxt parser
+# prototxt and json parser
+
+input text should be utf-8 format.
+
 ``` 
 layer {
   name: "data"

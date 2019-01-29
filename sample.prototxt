@@ -53,7 +53,7 @@ layer {
     pad_w: 11
     kernel_h: 31
     kernel_w: 31
-    stride_h: 11
-    stride_w: 11
+    stride_h:[ 11,12,134]
+    stride_w: 11 # size 
   }
 }
